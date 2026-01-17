@@ -1,8 +1,8 @@
-import { ItemToken } from "../lexers/token";
+import { ItemWithImageToken } from "../lexers/token";
 import { Shield } from "../model/shield";
-import { convertCosts, isMartial, convertDashOrNumber, prettifyStrings } from "../parsers-commons";
+import { convertCosts, isMartial, convertDashOrNumber, parseDescription } from "../parsers-commons";
 
-export function parseShield(shieldToken: ItemToken): Shield {
+export function parseShield(shieldToken: ItemWithImageToken): Shield {
 	const shieldStringTokens = shieldToken.strings.map((token) => token.string);
 	const name = shieldStringTokens[0];
 	const martial = isMartial(shieldToken.strings[1]);
@@ -12,7 +12,9 @@ export function parseShield(shieldToken: ItemToken): Shield {
 	const def = convertDashOrNumber(shieldStringTokens[2 + indexShift]);
 	const mdef = convertDashOrNumber(shieldStringTokens[3 + indexShift]);
 	const init = convertDashOrNumber(shieldStringTokens[4 + indexShift]);
-	const description = prettifyStrings(shieldStringTokens.slice(5 + indexShift));
+	const description = parseDescription(
+		shieldToken.strings.slice(5 + indexShift).filter((token) => token.string !== "No Quality."),
+	);
 
 	return {
 		image: shieldToken.image.image,

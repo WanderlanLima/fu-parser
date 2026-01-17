@@ -1,7 +1,7 @@
 import * as pdfjsLib from "pdfjs-dist";
 import { tokenizePDF } from "../pdf/lexers/pdf";
 import { importCoreRulebook } from "./pdf-importers/import-core-rulebook";
-import { importAtlas } from "./pdf-importers/import-atlas";
+import { importItems } from "./pdf-importers/import-items";
 
 // Relative url that foundry serves for the compiled webworker
 pdfjsLib.GlobalWorkerOptions.workerSrc = "modules/fu-parser/pdf.worker.js";
@@ -24,19 +24,21 @@ const parsePdf = async (pdfPath: string, bookType: BookType): Promise<[ParseResu
 	const [withPage, destroy] = await tokenizePDF(pdfPath);
 
 	switch (bookType) {
-		case "FUCR":
+		case "FUCR_LEGACY":
 			return [await importCoreRulebook(withPage), destroy];
+		case "FUCR":
 		case "FUHF":
 		case "FUTF":
 		case "FUNF":
-			return [await importAtlas(withPage, bookType), destroy];
+			return [await importItems(withPage, bookType), destroy];
 	}
 };
 
 export type BookType = (typeof BOOK_TYPES)[number];
-export const BOOK_TYPES = ["FUCR", "FUHF", "FUTF", "FUNF"] as const;
+export const BOOK_TYPES = ["FUCR", "FUCR_LEGACY", "FUHF", "FUTF", "FUNF"] as const;
 export const bookTypes = {
-	FUCR: "Core Rulebook",
+	FUCR: "Core Rulebook (rare items)",
+	FUCR_LEGACY: "Core Rulebook legacy",
 	FUHF: "High Fantasy Atlas",
 	FUTF: "Techno Fantasy Atlas",
 	FUNF: "Natural Fantasy Atlas",

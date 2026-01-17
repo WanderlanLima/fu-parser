@@ -1,35 +1,48 @@
 import { Token } from "../../pdf/lexers/token";
-import { saveAccessories, saveArmors, saveShields, saveWeaponModules, saveWeapons } from "./save-utils";
+import {
+	saveAccessories,
+	saveArmors,
+	saveCampActivities,
+	saveShields,
+	saveWeaponModules,
+	saveWeapons,
+} from "./save-utils";
 import { BookType, ParseResult } from "../import-pdf";
-import { parseAtlasPage } from "../../pdf/atlas-parsers/page-parser";
+import { parsePage } from "../../pdf/item-parsers/page-parser";
 import { Item, ItemCategory } from "../../pdf/model/common";
 import { Weapon } from "../../pdf/model/weapon";
 import { Armor } from "../../pdf/model/armor";
 import { Shield } from "../../pdf/model/shield";
 import { Accessory } from "../../pdf/model/accessory";
 import { WeaponModule } from "../../pdf/model/weapon-module";
+import { CampActivity } from "../../pdf/model/camp-activity";
 
+const FUCR_PAGES = [272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 283, 284, 285, 287, 288, 289];
 const FUHF_PAGES = [80, 81, 82, 83];
-const FUNF_PAGES = [86, 87, 88, 89];
+const FUNF_PAGES = [86, 87, 88, 89, 133, 134, 135];
 const FUTF_PAGES = [84, 85, 86, 87, 88, 89];
 
+const FUCR_FOLDER = "Core Rulebook Equipment";
 const FUHF_FOLDER = "High Fantasy Equipment";
 const FUNF_FOLDER = "Natural Fantasy Equipment";
 const FUTF_FOLDER = "Techno Fantasy Equipment";
+const CAMP_FOLDER = "Camp Activities";
 
 const PAGES = new Map<BookType, number[]>([
+	["FUCR", FUCR_PAGES],
 	["FUHF", FUHF_PAGES],
 	["FUNF", FUNF_PAGES],
 	["FUTF", FUTF_PAGES],
 ]);
 
 const FOLDERS = new Map<BookType, string>([
+	["FUCR", FUCR_FOLDER],
 	["FUHF", FUHF_FOLDER],
 	["FUNF", FUNF_FOLDER],
 	["FUTF", FUTF_FOLDER],
 ]);
 
-export function importAtlas(
+export function importItems(
 	withPage: <R>(pageNum: number, f: (d: Token[]) => Promise<R>) => Promise<[R, () => boolean]>,
 	bookType: BookType,
 ): Promise<ParseResult[]> {
@@ -38,10 +51,18 @@ export function importAtlas(
 			const [r, cleanup] = await withPage(pageNum, async (data) => {
 				try {
 					return Array.from(
-						parseAtlasPage(data)
+						parsePage(data)
 							.mapValues((items: Item[], category: ItemCategory) => {
 								const source = bookType + (pageNum - 2);
-								const saveFunction = assignSave(category, items, FOLDERS.get(bookType)!, source);
+								const folder = ((category: ItemCategory): string => {
+									switch (category) {
+										case "CAMP ACTIVITY":
+											return CAMP_FOLDER;
+										default:
+											return FOLDERS.get(bookType)!;
+									}
+								})(category);
+								const saveFunction = assignSave(category, items, folder, source);
 								return {
 									type: "success" as const,
 									page: pageNum,
@@ -88,6 +109,8 @@ function assignSave(
 		case "WEAPON MODULE":
 			return (imagePath: string) =>
 				saveWeaponModules(items as WeaponModule[], source, [folder, "Weapon Modules"], imagePath);
+		case "CAMP ACTIVITY":
+			return (_: string) => saveCampActivities(items as CampActivity[], source, [folder]);
 		default:
 			// This should never happen if `category` is properly typed
 			throw new Error(`Unknown item category: ${category}`);

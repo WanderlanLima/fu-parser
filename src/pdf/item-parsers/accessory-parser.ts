@@ -1,12 +1,12 @@
-import { ItemToken } from "../lexers/token";
+import { ItemWithImageToken } from "../lexers/token";
 import { Accessory } from "../model/accessory";
-import { convertCosts, prettifyStrings } from "../parsers-commons";
+import { convertCosts, parseDescription } from "../parsers-commons";
 
-export function parseAccessory(accessoryToken: ItemToken): Accessory {
+export function parseAccessory(accessoryToken: ItemWithImageToken): Accessory {
 	const accessoryStringTokens = accessoryToken.strings.map((token) => token.string);
 	const name = accessoryStringTokens[0];
 	const cost = convertCosts(accessoryStringTokens[1]);
-	const description = prettifyStrings(accessoryStringTokens.slice(2));
+	const description = parseDescription(accessoryToken.strings.slice(2));
 
 	return {
 		image: accessoryToken.image.image,

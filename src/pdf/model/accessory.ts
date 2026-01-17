@@ -18,7 +18,7 @@ export function accessoryToFuItem(data: Accessory, imagePath: string, folderId: 
 			isMartial: { value: false },
 			description: data.description,
 			cost: { value: data.cost },
-			source: { value: source },
+			source: source,
 			def: { value: 0 },
 			mdef: { value: 0 },
 			init: { value: 0 },

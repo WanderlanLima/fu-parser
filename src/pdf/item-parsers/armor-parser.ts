@@ -1,8 +1,8 @@
-import { ItemToken } from "../lexers/token";
+import { ItemWithImageToken } from "../lexers/token";
 import { Armor, convertDef } from "../model/armor";
-import { convertCosts, isMartial, convertDashOrNumber, prettifyStrings } from "../parsers-commons";
+import { convertCosts, isMartial, convertDashOrNumber, parseDescription } from "../parsers-commons";
 
-export function parseArmor(armorToken: ItemToken): Armor {
+export function parseArmor(armorToken: ItemWithImageToken): Armor {
 	const armorStringTokens = armorToken.strings.map((token) => token.string);
 	const name = armorStringTokens[0];
 	const martial = isMartial(armorToken.strings[1]);
@@ -12,7 +12,9 @@ export function parseArmor(armorToken: ItemToken): Armor {
 	const def = convertDef("DEX")(armorStringTokens[2 + indexShift]);
 	const mdef = convertDef("INS")(armorStringTokens[3 + indexShift]);
 	const init = convertDashOrNumber(armorStringTokens[4 + indexShift]);
-	const description = prettifyStrings(armorStringTokens.slice(5 + indexShift));
+	const description = parseDescription(
+		armorToken.strings.slice(5 + indexShift).filter((token) => token.string !== "No Quality."),
+	);
 
 	return {
 		image: armorToken.image.image,

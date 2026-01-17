@@ -157,7 +157,7 @@ export function beastToFuActor(
 			traits: { value: b.traits },
 			species: { value: b.type.toLowerCase() },
 			useEquipment: { value: b.equipment != null },
-			source: { value: source },
+			source: source,
 			villain: { value: "" as const },
 			isElite: { value: false as const },
 			isChampion: { value: 1 as const },

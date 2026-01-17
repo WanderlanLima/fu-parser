@@ -4,6 +4,7 @@ import { Shield } from "./shield";
 import { Accessory } from "./accessory";
 import { WeaponModule } from "./weapon-module";
 import { ATTR } from "../../external/project-fu";
+import { CampActivity } from "./camp-activity";
 
 export type Image = {
 	width: number;
@@ -69,9 +70,10 @@ export const DIE_SIZES = [6, 8, 10, 12] as const;
 export type DieSize = (typeof DIE_SIZES)[number];
 
 export type ItemCategory = (typeof ITEM_CATEGORY)[number];
-export const ITEM_CATEGORY = ["WEAPON", "ARMOR", "SHIELD", "ACCESSORY", "WEAPON MODULE"];
+export const ITEM_CATEGORY = ["WEAPON", "ARMOR", "SHIELD", "ACCESSORY", "WEAPON MODULE", "CAMP ACTIVITY"];
+export const FEATURE_CATEGORY = ["CAMP ACTIVITY"];
 
-export type Item = Weapon | Armor | Shield | Accessory | WeaponModule;
+export type Item = Weapon | Armor | Shield | Accessory | WeaponModule | CampActivity;
 
 export const STAT_MAPPING: Record<Stat, ATTR> = {
 	DEX: "dex",
