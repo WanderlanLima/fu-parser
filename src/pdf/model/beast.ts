@@ -193,10 +193,22 @@ export function beastToFuActor(
 			};
 		}),
 		...b.spells.map((spell): FUItem => {
+			const { targetingRule, maxTargets } = determineTargeting(spell.target);
+			const { amount, perTarget } = parseMpCost(spell.mp);
+			const isPerTargetCost = maxTargets > 1 || perTarget;
 			return {
 				type: "spell" as const,
 				name: spell.name,
 				system: {
+					cost: {
+						resource: "mp",
+						amount: amount,
+						perTarget: isPerTargetCost,
+					},
+					targeting: {
+						rule: targetingRule,
+						max: maxTargets,
+					},
 					mpCost: { value: spell.mp },
 					target: { value: spell.target },
 					duration: { value: spell.duration },
@@ -302,4 +314,32 @@ function calculateInitBonus(b: Beast, equipment: FUItem[]): number {
 		) -
 		(b.attributes.dex + b.attributes.ins) / 2
 	);
+}
+
+function determineTargeting(targetDesc: string): { targetingRule: string; maxTargets: number } {
+	switch (targetDesc) {
+		case "One creature":
+			return { targetingRule: "single", maxTargets: 1 };
+		case "Up to three creatures":
+			return { targetingRule: "multiple", maxTargets: 3 };
+		case "Special":
+			return { targetingRule: "special", maxTargets: 1 };
+		case "Self":
+			return { targetingRule: "self", maxTargets: 1 };
+		default:
+			return { targetingRule: "single", maxTargets: 1 };
+	}
+}
+
+const perTargetMpRegex = /(\d+)\s*(x|×)\s*T/i;
+function parseMpCost(mpDesc: string): { amount: number; perTarget: boolean } {
+	const matchPerTarget = mpDesc.match(perTargetMpRegex);
+	if (matchPerTarget) {
+		return { amount: parseInt(matchPerTarget[1], 10), perTarget: true };
+	}
+	const numericMp = parseInt(mpDesc, 10);
+	if (!isNaN(numericMp)) {
+		return { amount: numericMp, perTarget: false };
+	}
+	return { amount: 0, perTarget: false };
 }
