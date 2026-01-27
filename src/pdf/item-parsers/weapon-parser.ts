@@ -1,9 +1,9 @@
-import { ItemToken } from "../lexers/token";
-import { convertCosts, isMartial, prettifyStrings } from "../parsers-commons";
+import { ItemWithImageToken } from "../lexers/token";
+import { convertCosts, isMartial, parseDescription } from "../parsers-commons";
 import { Weapon } from "../model/weapon";
 import { DamageType, Distance, Handed, Stat, WeaponCategory } from "../model/common";
 
-export function parseWeapon(weaponToken: ItemToken): Weapon {
+export function parseWeapon(weaponToken: ItemWithImageToken, optionalWeaponCategory: string): Weapon {
 	// This value will change depending on optional martial and accuracy bonus strings
 	let indexShift = 0;
 
@@ -36,18 +36,36 @@ export function parseWeapon(weaponToken: ItemToken): Weapon {
 
 	// We skip index 5(+) and 7(+), these are "【" and "】"
 	const damage = Number(weaponStringTokens[6 + indexShift].slice(5)); // Removing "HR + " part
-	const damageType = weaponStringTokens[8 + indexShift] as DamageType;
 
-	const category = weaponStringTokens[9 + indexShift].toLowerCase() as WeaponCategory;
+	// Sometimes light type damage is separated to l + ight
+	const damageType = (
+		weaponStringTokens[8 + indexShift] === "l"
+			? weaponStringTokens[8 + indexShift] + weaponStringTokens[8 + ++indexShift]
+			: weaponStringTokens[8 + indexShift]
+	) as DamageType;
 
-	// We skip index 10(+) this is section separator
-	const hands = weaponStringTokens[11 + indexShift].toLowerCase() as Handed;
+	if (optionalWeaponCategory === "") {
+		indexShift++;
+	}
+	const category =
+		optionalWeaponCategory === ""
+			? (weaponStringTokens[8 + indexShift].toLowerCase() as WeaponCategory)
+			: (optionalWeaponCategory.toLowerCase() as WeaponCategory);
 
-	// We skip index 12(+) this is section separator
-	const distance = weaponStringTokens[13 + indexShift].toLowerCase() as Distance;
+	if (optionalWeaponCategory === "") {
+		// We skip one index - this is section separator
+		indexShift++;
+	}
 
-	// We skip index 14(+) this is section separator
-	const description = prettifyStrings(weaponStringTokens.slice(15 + indexShift));
+	const hands = weaponStringTokens[9 + indexShift].toLowerCase() as Handed;
+
+	// We skip index 11(+) this is section separator
+	const distance = weaponStringTokens[11 + indexShift].toLowerCase() as Distance;
+
+	// We skip index 13(+) this is section separator
+	const description = parseDescription(
+		weaponToken.strings.slice(13 + indexShift).filter((token) => token.string !== "No Quality."),
+	);
 
 	return {
 		image: weaponToken.image.image,

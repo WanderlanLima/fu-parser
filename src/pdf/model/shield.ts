@@ -22,7 +22,7 @@ export function shieldToFuItem(data: Shield, imagePath: string, folderId: string
 			isMartial: { value: data.martial },
 			description: data.description === "No Quality." ? "" : data.description,
 			cost: { value: data.cost },
-			source: { value: source },
+			source: source,
 			def: { value: data.def },
 			mdef: { value: data.mdef },
 			init: { value: data.init },

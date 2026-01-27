@@ -6,6 +6,7 @@ import { Armor, armorToFuItem } from "../../pdf/model/armor";
 import { Accessory, accessoryToFuItem } from "../../pdf/model/accessory";
 import { Shield, shieldToFuItem } from "../../pdf/model/shield";
 import { WeaponModule, weaponModuleToFuItem } from "../../pdf/model/weapon-module";
+import { CampActivity, campActivityToFuItem } from "../../pdf/model/camp-activity";
 
 export const saveConsumables = async (
 	categories: [string, Consumable[]][],
@@ -105,6 +106,20 @@ export const saveWeaponModules = async (
 				const payload: FUItem = weaponModuleToFuItem(data, imagePath, folder._id, source);
 				await Item.create(payload);
 			}
+		}
+	}
+};
+
+export const saveCampActivities = async (
+	campActivities: CampActivity[],
+	source: string,
+	folderNames: readonly string[],
+) => {
+	const folder = await getFolder(folderNames, "Item");
+	if (folder) {
+		for (const data of campActivities) {
+			const payload: FUItem = campActivityToFuItem(data, folder._id, source);
+			await Item.create(payload);
 		}
 	}
 };

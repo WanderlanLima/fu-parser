@@ -35,7 +35,7 @@ export function weaponToFuItem(data: Weapon, imagePath: string, folderId: string
 			category: { value: data.category },
 			hands: { value: data.hands },
 			damageType: { value: data.damageType },
-			source: { value: source },
+			source: source,
 			isBehavior: false,
 			weight: { value: 1 },
 			isCustomWeapon: { value: false },

@@ -1,9 +1,9 @@
-import { ItemToken, StringToken } from "../lexers/token";
-import { convertCosts, prettifyStrings } from "../parsers-commons";
+import { ItemWithImageToken, StringToken } from "../lexers/token";
+import { convertCosts, parseDescription } from "../parsers-commons";
 import { DamageType, Distance, Stat, WeaponCategory } from "../model/common";
 import { WeaponModule } from "../model/weapon-module";
 
-export function parseWeaponModule(weaponModuleToken: ItemToken): WeaponModule {
+export function parseWeaponModule(weaponModuleToken: ItemWithImageToken): WeaponModule {
 	const isShield =
 		weaponModuleToken.strings.find(
 			(token) => token.font.includes("PTSans-NarrowBold") && token.string.includes("Shield module"),
@@ -11,11 +11,11 @@ export function parseWeaponModule(weaponModuleToken: ItemToken): WeaponModule {
 	return isShield ? parseShield(weaponModuleToken) : parseWeapon(weaponModuleToken);
 }
 
-function parseShield(weaponModuleToken: ItemToken): WeaponModule {
+function parseShield(weaponModuleToken: ItemWithImageToken): WeaponModule {
 	const weaponModuleStringTokens = weaponModuleToken.strings.map((token) => token.string);
 	const name = weaponModuleStringTokens[0];
 	const cost = convertCosts(weaponModuleStringTokens[1]);
-	const description = parseDescription(weaponModuleToken.strings.slice(4));
+	const description = parseModuleDescription(weaponModuleToken.strings.slice(4));
 	const isComplex = description.includes("this module enabled cannot have");
 
 	// Accuracy, damage, damage type and category do not matter for shield. We will return some defaults.
@@ -37,7 +37,7 @@ function parseShield(weaponModuleToken: ItemToken): WeaponModule {
 	};
 }
 
-function parseWeapon(weaponModuleToken: ItemToken): WeaponModule {
+function parseWeapon(weaponModuleToken: ItemWithImageToken): WeaponModule {
 	const weaponModuleStringTokens = weaponModuleToken.strings.map((token) => token.string);
 	const name = weaponModuleStringTokens[0];
 	const cost = convertCosts(weaponModuleStringTokens[1]);
@@ -66,7 +66,7 @@ function parseWeapon(weaponModuleToken: ItemToken): WeaponModule {
 	const distance = weaponModuleStringTokens[11 + indexShift].toLowerCase() as Distance;
 
 	// We skip index 12(+) this is section separator
-	const description = parseDescription(weaponModuleToken.strings.slice(13 + indexShift));
+	const description = parseModuleDescription(weaponModuleToken.strings.slice(13 + indexShift));
 	const isComplex = description.includes("this module enabled cannot have");
 
 	return {
@@ -83,11 +83,14 @@ function parseWeapon(weaponModuleToken: ItemToken): WeaponModule {
 	};
 }
 
-function parseDescription(weaponModuleTokenStrings: StringToken[]) {
+function parseModuleDescription(weaponModuleTokenStrings: StringToken[]) {
 	// Remove section separator and No qualities
-	return prettifyStrings(
-		weaponModuleTokenStrings
-			.filter((token) => !token.font.includes("Wingdings-Regular") && token.string !== "No qualities.")
-			.map((token) => token.string),
+	return parseDescription(
+		weaponModuleTokenStrings.filter(
+			(token) =>
+				!token.font.includes("Wingdings-Regular") &&
+				!token.font.includes("FabulaUltimaicons-Regular") &&
+				token.string !== "No qualities.",
+		),
 	);
 }

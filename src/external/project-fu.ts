@@ -1,4 +1,4 @@
-import { Image, ModuleType, WeaponCategory } from "../pdf/model/common";
+import { Image, WeaponCategory } from "../pdf/model/common";
 
 declare global {
 	const game: {
@@ -137,7 +137,7 @@ type DamageType = "physical" | "air" | "bolt" | "dark" | "earth" | "fire" | "ice
 
 type Base = {
 	description: string;
-	source?: { value: string };
+	source?: string;
 };
 type SystemItem = {
 	cost: { value: number };
@@ -448,6 +448,12 @@ export type FUItem = Item &
 					};
 				};
 		  }
+		| {
+				type: "optionalFeature";
+				system: Base & {
+					optionalType: string;
+				};
+		  }
 		// Vehicle Frame
 		| {
 				type: "classFeature";
@@ -616,7 +622,7 @@ export type FUActor = Actor & {
 		isCompanion: { value: boolean };
 		useEquipment: { value: boolean };
 		study: { value: 0 };
-		source?: { value: string };
+		source?: string;
 	};
 };
 

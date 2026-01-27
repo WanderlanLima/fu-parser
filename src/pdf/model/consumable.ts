@@ -17,7 +17,7 @@ export function consumableToFuItem(data: Consumable, imagePath: string, folderId
 		system: {
 			ipCost: { value: data.ipCost },
 			description: data.description,
-			source: { value: source },
+			source: source,
 		},
 	};
 }

@@ -14,7 +14,13 @@ export const isStringToken = (token: Token): token is StringToken => {
 export const asStringToken = (token: Token) => token as StringToken;
 export const asImageToken = (token: Token) => token as ImageToken;
 
-export type ItemToken = {
+export type ItemWithImageToken = {
 	image: ImageToken;
 	strings: StringToken[];
 };
+
+export type FeatureToken = {
+	strings: StringToken[];
+};
+
+export type ItemToken = ItemWithImageToken | FeatureToken;

@@ -9,29 +9,35 @@ import {
 	Token,
 } from "../lexers/token";
 import "../../common/common.ts";
-import { ITEM_CATEGORY, ItemCategory } from "../model/common";
+import { FEATURE_CATEGORY, ITEM_CATEGORY, ItemCategory } from "../model/common";
 
-export function itemizeTokens(tokens: Token[]): Map<ItemCategory, ItemToken[]> {
+export function itemizeTokens(tokens: Token[]): [Map<ItemCategory, ItemToken[]>, string] {
 	const stringTokens = tokens.filter(isStringToken).map(asStringToken);
 	const imageTokens = tokens
 		.filter(isImageToken)
 		.map(asImageToken)
 		.sort((img1, img2) => img2.y - img1.y);
 
+	const optionalWeaponCategory =
+		stringTokens
+			.find((token) => token.string.startsWith("SAMPLE RARE"))
+			?.string.split(" ")
+			.at(2) || "";
 	const stringTokensByCategory = divideTokensByCategory(stringTokens).mapValues((tokens) =>
 		groupItemStringTokens(tokens),
 	);
 	const imageTokensByCategory = divideImagesByCategory(stringTokensByCategory, imageTokens);
 
-	return stringTokensByCategory.map((category, categoryTokens) => {
+	const itemsByCategory = stringTokensByCategory.map((category, categoryTokens) => {
 		const itemTokens: ItemToken[] = categoryTokens.map((tokens, index) => {
-			return {
-				image: imageTokensByCategory.get(category)![index],
-				strings: tokens,
-			};
+			return FEATURE_CATEGORY.includes(category)
+				? { strings: tokens }
+				: { image: imageTokensByCategory.get(category)![index], strings: tokens };
 		});
 		return [category, itemTokens];
 	});
+
+	return [itemsByCategory, optionalWeaponCategory];
 }
 
 // Used to filter out the elements with fonts in which things like page number, watermark, table headers are written
@@ -44,10 +50,13 @@ const isItemElement = (token: StringToken) =>
 function divideTokensByCategory(stringTokens: StringToken[]): Map<ItemCategory, StringToken[]> {
 	return stringTokens.reduce(
 		(acc, token) => {
-			if (ITEM_CATEGORY.includes(token.string)) {
-				acc.currentCategory = token.string;
-				if (!acc.tokensByCategory.has(token.string)) {
-					acc.tokensByCategory.set(token.string, []);
+			if (ITEM_CATEGORY.includes(token.string) || isSampleArmorOrShield(token.string)) {
+				const currentCategory = isSampleArmorOrShield(token.string)
+					? trimEndingS(token.string.split(" ").at(2)) || token.string
+					: token.string;
+				acc.currentCategory = currentCategory;
+				if (!acc.tokensByCategory.has(currentCategory)) {
+					acc.tokensByCategory.set(currentCategory, []);
 					acc.skipTokens = false;
 				} else {
 					// This is introduced because of strange parsing of the "second" weapons' page.
@@ -55,6 +64,9 @@ function divideTokensByCategory(stringTokens: StringToken[]): Map<ItemCategory, 
 					// So, if category reappears, i.e. has its list already we skip adding elements to it.
 					acc.skipTokens = true;
 				}
+			} else if (token.string.includes("new Camp Activities")) {
+				// There is an additional frame under camp activities list, we want to skip parsing it.
+				acc.skipTokens = true;
 			} else if (acc.currentCategory !== "" && isItemElement(token) && !acc.skipTokens) {
 				const tokenList = acc.tokensByCategory.get(acc.currentCategory);
 				tokenList?.push(token); // This is mutable, so it modifies the list in the tokensByCategory map
@@ -102,5 +114,11 @@ const isLastItemToken = (token: StringToken, tokenIdx: number, stringTokens: Str
 	token.string.endsWith(".") &&
 	!(
 		stringTokens[tokenIdx + 1]?.font?.endsWith("PTSans-Narrow") ||
-		stringTokens[tokenIdx + 1]?.font?.includes("Wingdings-Regular")
+		stringTokens[tokenIdx + 1]?.font?.includes("Wingdings-Regular") ||
+		stringTokens[tokenIdx + 1]?.font?.endsWith("FabulaUltimaicons-Regular")
 	);
+
+const isSampleArmorOrShield = (tokenString: string) =>
+	tokenString.startsWith("SAMPLE RARE") && !tokenString.endsWith("WEAPONS");
+
+const trimEndingS = (str: string | undefined) => (str?.endsWith("S") ? str.slice(0, -1) : str);
