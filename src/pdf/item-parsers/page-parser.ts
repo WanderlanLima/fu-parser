@@ -19,13 +19,17 @@ export function parsePage(pageData: Token[]): Map<ItemCategory, Item[]> {
 	*/
 	const [itemTokensByCategory, optionalWeaponCategory] = itemizeTokens(pageData);
 	return itemTokensByCategory.map((category, itemTokens) => {
-		const items = itemTokens.map((token) => {
-			const item = parseItem(category, token, optionalWeaponCategory);
-			if (hasUndefinedProperty(item)) {
-				throw new Error("Failed to parse one or more items on the page.");
+		const items = itemTokens.reduce((acc, token) => {
+			try {
+				const item = parseItem(category, token, optionalWeaponCategory);
+				if (!hasUndefinedProperty(item)) {
+					acc.push(item);
+				}
+			} catch (e) {
+				console.warn(`Skipping invalid item on page ${category}:`, e);
 			}
-			return item;
-		});
+			return acc;
+		}, [] as Item[]);
 		return [category, items];
 	});
 	// }
