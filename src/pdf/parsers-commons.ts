@@ -3,6 +3,90 @@ import { StringToken } from "./lexers/token";
 export const isMartial = (token: StringToken) =>
 	(token.font.includes("BasicShapes1") && token.string === "E") ||
 	(token.font.includes("Type3") && token.string === "W");
+
+export const isNoQuality = (s: string) => {
+	const normalized = s.trim().toLowerCase();
+	return normalized === "no quality." || normalized === "sem características especiais." || normalized === "sem caracteristicas especiais.";
+};
+
+export const normalizeStat = (s: string): string => {
+	const map: Record<string, string> = {
+		DEX: "DEX",
+		DES: "DEX",
+		MIG: "MIG",
+		VIG: "MIG",
+		INS: "INS",
+		AST: "INS",
+		WLP: "WLP",
+		VON: "WLP",
+	};
+	return map[s.trim().toUpperCase()] || s.trim();
+};
+
+export const normalizeDamageType = (s: string): string => {
+	const map: Record<string, string> = {
+		physical: "physical",
+		físico: "physical",
+		air: "air",
+		ar: "air",
+		bolt: "bolt",
+		raio: "bolt",
+		dark: "dark",
+		trevas: "dark",
+		earth: "earth",
+		terra: "earth",
+		fire: "fire",
+		fogo: "fire",
+		ice: "ice",
+		gelo: "ice",
+		light: "light",
+		luz: "light",
+		poison: "poison",
+		veneno: "poison",
+	};
+	return map[s.trim().toLowerCase()] || s.trim().toLowerCase();
+};
+
+export const normalizeHanded = (s: string): string => {
+	const val = s.trim().toLowerCase();
+	if (val === "one-handed" || val === "uma mão") return "one-handed";
+	if (val === "two-handed" || val === "duas mãos") return "two-handed";
+	return val;
+};
+
+export const normalizeDistance = (s: string): string => {
+	const val = s.trim().toLowerCase();
+	if (val === "melee" || val === "corpo a corpo" || val === "c a c") return "melee";
+	if (val === "ranged" || val === "à distância" || val === "a distância") return "ranged";
+	return val;
+};
+
+export const translateWeaponCategory = (s: string): string => {
+	const map: Record<string, string> = {
+		arcane: "arcane",
+		arcana: "arcane",
+		bow: "bow",
+		arco: "bow",
+		brawling: "brawling",
+		luta: "brawling",
+		dagger: "dagger",
+		adaga: "dagger",
+		firearm: "firearm",
+		"arma de fogo": "firearm",
+		flail: "flail",
+		malho: "flail",
+		heavy: "heavy",
+		pesada: "heavy",
+		spear: "spear",
+		lança: "spear",
+		sword: "sword",
+		espada: "sword",
+		thrown: "thrown",
+		arremessável: "thrown",
+		"ar-remessável": "thrown",
+	};
+	return map[s.trim().toLowerCase()] || s.trim().toLowerCase();
+};
 export const convertDashOrNumber = (s: string) => (s === "-" ? 0 : Number(s));
 
 export const convertCosts = (s: string) => {
@@ -72,7 +156,7 @@ export function parseDescription(descriptionTokens: StringToken[]): string {
 	const isOffensiveSpellIcon = (token: StringToken | undefined) => {
 		return token
 			? (token.font.includes("Heydings-Icons") && token.string === "r") ||
-					(token.font.includes("Type3") && token.string === "O")
+			(token.font.includes("Type3") && token.string === "O")
 			: false;
 	};
 

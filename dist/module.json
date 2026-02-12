@@ -1,0 +1,34 @@
+{
+    "id": "fu-parser",
+    "title": "Fabula Ultima PDF Parser",
+    "description": "Parse the Fabula Ultima pdf for importing.",
+    "authors": [
+      {
+      "name": "xeqi"
+      }
+    ],
+    "version": "#{VERSION}#",
+    "compatibility": {
+      "minimum": "10",
+      "verified": "13"
+    },
+    "relationships":{
+      "systems":[{
+        "id": "projectfu",
+        "type": "system",
+        "manifest": "https://github.com/League-of-Fabulous-Developers/FoundryVTT-Fabula-Ultima/releases/latest/download/system.json",
+        "compatibility": {
+          "verified": "2.1.0"
+        }
+      }]
+    },
+    "esmodules": [
+        "main.js"
+    ],
+    "styles": [
+      "style.css"
+    ],
+    "url": "#{URL}#",
+    "manifest": "#{MANIFEST}#",
+    "download": "#{DOWNLOAD}#"
+  }

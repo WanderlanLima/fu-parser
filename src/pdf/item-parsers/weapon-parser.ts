@@ -1,5 +1,15 @@
 import { ItemWithImageToken } from "../lexers/token";
-import { convertCosts, isMartial, parseDescription } from "../parsers-commons";
+import {
+	convertCosts,
+	isMartial,
+	parseDescription,
+	normalizeStat,
+	normalizeDamageType,
+	translateWeaponCategory,
+	normalizeHanded,
+	normalizeDistance,
+	isNoQuality,
+} from "../parsers-commons";
 import { Weapon } from "../model/weapon";
 import { DamageType, Distance, Handed, Stat, WeaponCategory } from "../model/common";
 
@@ -29,42 +39,45 @@ export function parseWeapon(weaponToken: ItemWithImageToken, optionalWeaponCateg
 	}
 	const bonus = isNaN(maybeBonus) ? 0 : maybeBonus;
 	const accuracy = {
-		primary: primaryAccuracyStat.trim() as Stat,
-		secondary: secondaryAccuracyStat.trim() as Stat,
+		primary: normalizeStat(primaryAccuracyStat) as Stat,
+		secondary: normalizeStat(secondaryAccuracyStat) as Stat,
 		bonus: bonus,
 	};
 
 	// We skip index 5(+) and 7(+), these are "【" and "】"
-	const damage = Number(weaponStringTokens[6 + indexShift].slice(5)); // Removing "HR + " part
+	// Handle HR + X or RA + X
+	const damageToken = weaponStringTokens[6 + indexShift];
+	// Remove prefix "HR + " or "RA + "
+	const damage = Number(damageToken.replace(/^(HR|RA)\s*\+\s*/, ""));
 
 	// Sometimes light type damage is separated to l + ight
-	const damageType = (
-		weaponStringTokens[8 + indexShift] === "l"
-			? weaponStringTokens[8 + indexShift] + weaponStringTokens[8 + ++indexShift]
-			: weaponStringTokens[8 + indexShift]
-	) as DamageType;
+	let rawDamageType = weaponStringTokens[8 + indexShift];
+	if (rawDamageType === "l") {
+		rawDamageType += weaponStringTokens[8 + ++indexShift];
+	}
+	const damageType = normalizeDamageType(rawDamageType) as DamageType;
 
 	if (optionalWeaponCategory === "") {
 		indexShift++;
 	}
 	const category =
 		optionalWeaponCategory === ""
-			? (weaponStringTokens[8 + indexShift].toLowerCase() as WeaponCategory)
-			: (optionalWeaponCategory.toLowerCase() as WeaponCategory);
+			? (translateWeaponCategory(weaponStringTokens[8 + indexShift]) as WeaponCategory)
+			: (translateWeaponCategory(optionalWeaponCategory) as WeaponCategory);
 
 	if (optionalWeaponCategory === "") {
 		// We skip one index - this is section separator
 		indexShift++;
 	}
 
-	const hands = weaponStringTokens[9 + indexShift].toLowerCase() as Handed;
+	const hands = normalizeHanded(weaponStringTokens[9 + indexShift]) as Handed;
 
 	// We skip index 11(+) this is section separator
-	const distance = weaponStringTokens[11 + indexShift].toLowerCase() as Distance;
+	const distance = normalizeDistance(weaponStringTokens[11 + indexShift]) as Distance;
 
 	// We skip index 13(+) this is section separator
 	const description = parseDescription(
-		weaponToken.strings.slice(13 + indexShift).filter((token) => token.string !== "No Quality."),
+		weaponToken.strings.slice(13 + indexShift).filter((token) => !isNoQuality(token.string)),
 	);
 
 	return {

@@ -30,15 +30,17 @@ const parsePdf = async (pdfPath: string, bookType: BookType): Promise<[ParseResu
 		case "FUHF":
 		case "FUTF":
 		case "FUNF":
+		case "FUCR_PT":
 			return [await importItems(withPage, bookType), destroy];
 	}
 };
 
 export type BookType = (typeof BOOK_TYPES)[number];
-export const BOOK_TYPES = ["FUCR", "FUCR_LEGACY", "FUHF", "FUTF", "FUNF"] as const;
+export const BOOK_TYPES = ["FUCR", "FUCR_LEGACY", "FUHF", "FUTF", "FUNF", "FUCR_PT"] as const;
 export const bookTypes = {
 	FUCR: "Core Rulebook (rare items)",
 	FUCR_LEGACY: "Core Rulebook legacy",
+	FUCR_PT: "Livro Básico (PT-BR)",
 	FUHF: "High Fantasy Atlas",
 	FUTF: "Techno Fantasy Atlas",
 	FUNF: "Natural Fantasy Atlas",

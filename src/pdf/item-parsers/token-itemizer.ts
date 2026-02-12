@@ -47,16 +47,38 @@ const isItemElement = (token: StringToken) =>
 	!token.font.includes("Antonio-Bold") &&
 	!token.font.includes("BodoniOrnaments");
 
+function getCategoryFromHeader(s: string): ItemCategory | undefined {
+	const header = s.toUpperCase().trim();
+	if (["WEAPON", "ARMAS"].includes(header) || header.includes("CATEGORIA DE") || header.includes("CATEGORIAS DE"))
+		return "WEAPON";
+	if (["ARMOR", "ARMADURAS", "ARMADURAS BÁSICAS"].includes(header)) return "ARMOR";
+	if (["SHIELD", "ESCUDOS"].includes(header)) return "SHIELD";
+	if (["ACCESSORY", "ACESSÓRIOS"].includes(header)) return "ACCESSORY";
+	if (["WEAPON MODULE", "MÓDULOS DE ARMA"].includes(header)) return "WEAPON MODULE";
+	if (["CAMP ACTIVITY", "ATIVIDADES DE ACAMPAMENTO"].includes(header)) return "CAMP ACTIVITY";
+	return undefined;
+}
+
 function divideTokensByCategory(stringTokens: StringToken[]): Map<ItemCategory, StringToken[]> {
 	return stringTokens.reduce(
 		(acc, token) => {
-			if (ITEM_CATEGORY.includes(token.string) || isSampleArmorOrShield(token.string)) {
-				const currentCategory = isSampleArmorOrShield(token.string)
-					? trimEndingS(token.string.split(" ").at(2)) || token.string
-					: token.string;
-				acc.currentCategory = currentCategory;
-				if (!acc.tokensByCategory.has(currentCategory)) {
-					acc.tokensByCategory.set(currentCategory, []);
+			const detectedCategory = getCategoryFromHeader(token.string);
+			if (
+				ITEM_CATEGORY.includes(token.string) ||
+				isSampleArmorOrShield(token.string) ||
+				detectedCategory
+			) {
+				const currentCategory =
+					detectedCategory ||
+					(isSampleArmorOrShield(token.string)
+						? trimEndingS(token.string.split(" ").at(2)) || token.string
+						: token.string);
+				acc.currentCategory = currentCategory as ItemCategory;
+				if (!acc.tokensByCategory.has(acc.currentCategory)) {
+					acc.tokensByCategory.set(acc.currentCategory, []);
+					acc.skipTokens = false;
+				} else if (detectedCategory) {
+					// Allow multiple headers of the same category on the same page (e.g. Sub-categories in PT)
 					acc.skipTokens = false;
 				} else {
 					// This is introduced because of strange parsing of the "second" weapons' page.

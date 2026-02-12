@@ -13,11 +13,27 @@ export type Armor = {
 };
 
 export const convertDef = (prefix: string) => (s: string) => {
-	if (s.startsWith(prefix + " size")) {
-		const num = s.slice(10);
+	const stringMap: Record<string, string> = {
+		DES: "DEX",
+		AST: "INS",
+		VIG: "MIG",
+		VON: "WLP",
+	};
+
+	let normalized = s;
+	for (const key in stringMap) {
+		normalized = normalized.replace(key, stringMap[key]);
+	}
+
+	if (normalized.startsWith(prefix + " size")) {
+		const num = normalized.slice((prefix + " size").length);
 		return num === "" ? 0 : Number(num);
-	} else if (s.startsWith(prefix + " die")) {
-		const num = s.slice(9);
+	} else if (normalized.startsWith(prefix + " die")) {
+		const num = normalized.slice((prefix + " die").length);
+		return num === "" ? 0 : Number(num);
+	} else if (normalized.startsWith(prefix)) {
+		// Handle "DEX + 1" or "DEX"
+		const num = normalized.slice(prefix.length).replace("+", "").trim();
 		return num === "" ? 0 : Number(num);
 	} else return s === "-" ? 0 : Number(s);
 };

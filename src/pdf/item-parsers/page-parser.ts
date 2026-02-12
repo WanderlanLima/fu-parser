@@ -10,22 +10,25 @@ import { parseWeaponModule } from "./weapon-module-parser";
 import { parseCampActivity } from "./camp-activity-parser";
 
 export function parsePage(pageData: Token[]): Map<ItemCategory, Item[]> {
+	// Watermark check disabled to support Portuguese PDF which may not have it or uses different font
+	/*
 	const watermark = pageData[pageData.length - 1];
 	if (watermark.kind !== "String" || asStringToken(watermark).font !== "Helvetica") {
 		throw new Error("Failed to parse page because it is not watermarked.");
 	} else {
-		const [itemTokensByCategory, optionalWeaponCategory] = itemizeTokens(pageData);
-		return itemTokensByCategory.map((category, itemTokens) => {
-			const items = itemTokens.map((token) => {
-				const item = parseItem(category, token, optionalWeaponCategory);
-				if (hasUndefinedProperty(item)) {
-					throw new Error("Failed to parse one or more items on the page.");
-				}
-				return item;
-			});
-			return [category, items];
+	*/
+	const [itemTokensByCategory, optionalWeaponCategory] = itemizeTokens(pageData);
+	return itemTokensByCategory.map((category, itemTokens) => {
+		const items = itemTokens.map((token) => {
+			const item = parseItem(category, token, optionalWeaponCategory);
+			if (hasUndefinedProperty(item)) {
+				throw new Error("Failed to parse one or more items on the page.");
+			}
+			return item;
 		});
-	}
+		return [category, items];
+	});
+	// }
 }
 
 function parseItem(category: ItemCategory, itemToken: ItemToken, optionalWeaponCategory: string): Item {

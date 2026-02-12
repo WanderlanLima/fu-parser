@@ -18,11 +18,13 @@ import { WeaponModule } from "../../pdf/model/weapon-module";
 import { CampActivity } from "../../pdf/model/camp-activity";
 
 const FUCR_PAGES = [272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 283, 284, 285, 287, 288, 289];
+const FUCR_PT_PAGES = [130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142];
 const FUHF_PAGES = [80, 81, 82, 83];
 const FUNF_PAGES = [86, 87, 88, 89, 133, 134, 135];
 const FUTF_PAGES = [84, 85, 86, 87, 88, 89];
 
 const FUCR_FOLDER = "Core Rulebook Equipment";
+const FUCR_PT_FOLDER = "Equipamento - Livro Básico";
 const FUHF_FOLDER = "High Fantasy Equipment";
 const FUNF_FOLDER = "Natural Fantasy Equipment";
 const FUTF_FOLDER = "Techno Fantasy Equipment";
@@ -30,6 +32,7 @@ const CAMP_FOLDER = "Camp Activities";
 
 const PAGES = new Map<BookType, number[]>([
 	["FUCR", FUCR_PAGES],
+	["FUCR_PT", FUCR_PT_PAGES],
 	["FUHF", FUHF_PAGES],
 	["FUNF", FUNF_PAGES],
 	["FUTF", FUTF_PAGES],
@@ -37,6 +40,7 @@ const PAGES = new Map<BookType, number[]>([
 
 const FOLDERS = new Map<BookType, string>([
 	["FUCR", FUCR_FOLDER],
+	["FUCR_PT", FUCR_PT_FOLDER],
 	["FUHF", FUHF_FOLDER],
 	["FUNF", FUNF_FOLDER],
 	["FUTF", FUTF_FOLDER],
